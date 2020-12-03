@@ -18,6 +18,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.speech.RecognizerIntent;
 import android.util.SparseArray;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -33,6 +34,9 @@ import com.google.android.gms.vision.text.TextBlock;
 import com.google.android.gms.vision.text.TextRecognizer;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
+
+import java.util.ArrayList;
+import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -56,6 +60,13 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         setWidget();
+        imgMic = findViewById(R.id.img_mic);
+        imgMic.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                getSpeechInput();
+            }
+        });//mic
 
         // camera permission
         cameraPermission = new  String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE};
@@ -64,6 +75,17 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         storagePermission = new  String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE};
 
     }
+    public void getSpeechInput(){
+        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, Locale.getDefault());
+
+        if (intent.resolveActivity(getPackageManager())!= null){
+            startActivityForResult(intent,200);
+        }else {
+            Toast.makeText(this,"your device don`t support speech input",Toast.LENGTH_LONG).show();
+        }
+    } //giọng noi
 
     private void setWidget() {
         edtResult = findViewById(R.id.edt_result);
@@ -191,6 +213,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         // got image from camera
         super.onActivityResult(requestCode, resultCode, data);
+        switch (requestCode) {
+            case 200:
+                if (resultCode == RESULT_OK && data != null) {
+                    ArrayList<String> result = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+                    edtResult.setText(result.get(0));
+                }
+                break;
+        }// set mic cho vao editext
+// got image from camera
         if (resultCode == RESULT_OK) {
             if (requestCode == IMAGE_PICK_GALLERY_CODE) {
                 // got image from gallery now crop it
