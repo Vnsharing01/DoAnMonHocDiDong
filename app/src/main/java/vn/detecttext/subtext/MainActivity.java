@@ -22,6 +22,7 @@ import android.util.SparseArray;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -48,14 +49,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private EditText edtResult;
     private ImageView imgView;
     private ImageView imgCamera, imgGallery, imgMic, imgSpeaker;
-    private TextView tvTranslate;
+    private Button tvTranslate;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        ActionBar bar = getSupportActionBar();
-        bar.setSubtitle("click + button to add image");
         setWidget();
 
         // camera permission
@@ -73,7 +72,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         imgGallery = findViewById(R.id.img_gallery);
         imgMic = findViewById(R.id.img_mic);
         imgSpeaker = findViewById(R.id.img_speaker);
-        tvTranslate = findViewById(R.id.tv_Translate);
+        tvTranslate = findViewById(R.id.btn_translateText);
 
         imgCamera.setOnClickListener(this);
         imgGallery.setOnClickListener(this);
@@ -109,7 +108,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             case R.id.img_speaker:
                 break;
-            case R.id.tv_Translate:
+            case R.id.btn_translateText:
                 break;
         }
     }

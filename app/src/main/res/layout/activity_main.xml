@@ -42,7 +42,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:hint=""
-                        android:minHeight="100dp"
+                        android:minHeight="25dp"
                         android:autoLink="all"
                         android:textColor="#000"/>
                     <LinearLayout
@@ -51,18 +51,14 @@
                         android:layout_gravity="right"
                         android:gravity="center"
                         android:orientation="horizontal">
-                        <ImageView
-                            android:layout_width="30dp"
-                            android:layout_height="30dp"
-                            android:src="@drawable/ic_translate"/>
-                        <TextView
-                            android:id="@+id/tv_Translate"
+                        <Button
+                            android:id="@+id/btn_translateText"
                             android:layout_width="wrap_content"
-                            android:layout_height="match_parent"
-                            android:text="Dịch"
+                            android:layout_height="wrap_content"
                             android:textSize="20sp"
-                            android:textStyle="bold"
-                            android:textColor="@color/colorPrimary" />
+                            android:text="Dịch"
+                            android:drawableLeft="@drawable/ic_sync_"
+                            android:textAllCaps="false"/>
                     </LinearLayout>
                     <TextView
                         android:layout_width="match_parent"
@@ -168,11 +164,12 @@
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="5dp">
+                android:layout_marginHorizontal="5dp"
+                android:layout_marginBottom="5dp">
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_margin="5dp"
+                    android:layout_marginHorizontal="5dp"
                     android:orientation="vertical">
                     <TextView
                         android:layout_width="match_parent"
