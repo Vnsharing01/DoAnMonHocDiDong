@@ -19,6 +19,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.speech.RecognizerIntent;
+import android.speech.tts.TextToSpeech;
 import android.util.SparseArray;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -54,19 +55,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     private ImageView imgView;
     private ImageView imgCamera, imgGallery, imgMic, imgSpeaker;
     private Button tvTranslate;
+    TextToSpeech toSpeech;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         setWidget();
-        imgMic = findViewById(R.id.img_mic);
-        imgMic.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                getSpeechInput();
-            }
-        });//mic
+//        imgMic = findViewById(R.id.img_mic);
+//        imgMic.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                getSpeechInput();
+//            }
+//        });//mic
 
         // camera permission
         cameraPermission = new  String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE};
@@ -126,9 +129,21 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     pickGallery();
                 }
                 break;
-            case R.id.img_mic:
+            case R.id.img_mic: // chỗ này để click dc vào mic này bạn
+                getSpeechInput();
                 break;
-            case R.id.img_speaker:
+            case R.id.img_speaker: // chỗ này d
+                final String text = edtResult.getText().toString();
+
+                toSpeech = new TextToSpeech(MainActivity.this, new TextToSpeech.OnInitListener() {
+                    @Override
+                    public void onInit(int status) {
+                        if (status != TextToSpeech.ERROR){
+                            toSpeech.setLanguage(Locale.getDefault());
+                            toSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, null);
+                        }
+                    }
+                });
                 break;
             case R.id.btn_translateText:
                 break;
