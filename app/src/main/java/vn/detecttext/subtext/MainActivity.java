@@ -18,6 +18,8 @@ import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
+import android.speech.RecognizerIntent;
+import android.speech.tts.TextToSpeech;
 import android.util.SparseArray;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -28,11 +30,21 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.vision.Frame;
 import com.google.android.gms.vision.text.TextBlock;
 import com.google.android.gms.vision.text.TextRecognizer;
+import com.google.firebase.ml.common.modeldownload.FirebaseModelDownloadConditions;
+import com.google.firebase.ml.naturallanguage.FirebaseNaturalLanguage;
+import com.google.firebase.ml.naturallanguage.languageid.FirebaseLanguageIdentification;
+import com.google.firebase.ml.naturallanguage.translate.FirebaseTranslateLanguage;
+import com.google.firebase.ml.naturallanguage.translate.FirebaseTranslator;
+import com.google.firebase.ml.naturallanguage.translate.FirebaseTranslatorOptions;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
+
+import java.util.ArrayList;
+import java.util.Locale;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener {
 
@@ -47,15 +59,28 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     Uri image_uri;
 
     private EditText edtResult;
+    private TextView tvTranslate, tvSourceLang;
     private ImageView imgView;
     private ImageView imgCamera, imgGallery, imgMic, imgSpeaker;
-    private Button tvTranslate;
+
+    TextToSpeech toSpeech;
+
+    private Button btnTranslate;
+
+    private String sourceText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         setWidget();
+//        imgMic = findViewById(R.id.img_mic);
+//        imgMic.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View view) {
+//                getSpeechInput();
+//            }
+//        });//mic
 
         // camera permission
         cameraPermission = new  String[]{Manifest.permission.CAMERA, Manifest.permission.WRITE_EXTERNAL_STORAGE};
@@ -64,21 +89,34 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         storagePermission = new  String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE};
 
     }
+    public void getSpeechInput(){
+        Intent intent = new Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+        intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, Locale.getDefault());
+
+        if (intent.resolveActivity(getPackageManager())!= null){
+            startActivityForResult(intent,200);
+        }else {
+            Toast.makeText(this,"your device don`t support speech input",Toast.LENGTH_LONG).show();
+        }
+    } //giọng noi
 
     private void setWidget() {
         edtResult = findViewById(R.id.edt_result);
+        tvTranslate = findViewById(R.id.tv_translateText);
+        tvSourceLang = findViewById(R.id.tv_sourceLang);
         imgView = findViewById(R.id.img_view);
         imgCamera = findViewById(R.id.img_camera);
         imgGallery = findViewById(R.id.img_gallery);
         imgMic = findViewById(R.id.img_mic);
         imgSpeaker = findViewById(R.id.img_speaker);
-        tvTranslate = findViewById(R.id.btn_translateText);
+        btnTranslate = findViewById(R.id.btn_translateText);
 
         imgCamera.setOnClickListener(this);
         imgGallery.setOnClickListener(this);
         imgMic.setOnClickListener(this);
         imgSpeaker.setOnClickListener(this);
-        tvTranslate.setOnClickListener(this);
+        btnTranslate.setOnClickListener(this);
     }
 
     @Override
@@ -104,16 +142,33 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     pickGallery();
                 }
                 break;
-            case R.id.img_mic:
+            case R.id.img_mic: // chỗ này để click dc vào mic này bạn
+                getSpeechInput();
                 break;
             case R.id.img_speaker:
+                final String text = edtResult.getText().toString();
+
+                toSpeech = new TextToSpeech(MainActivity.this, new TextToSpeech.OnInitListener() {
+                    @Override
+                    public void onInit(int status) {
+                        if (status != TextToSpeech.ERROR){
+                            toSpeech.setLanguage(Locale.getDefault());
+                            toSpeech.speak(text, TextToSpeech.QUEUE_FLUSH, null);
+                        }
+                    }
+                });
                 break;
             case R.id.btn_translateText:
+                Intent intent = new Intent(this, TranslateActivity.class);
+                intent.putExtra("text", edtResult.getText());
+                startActivity(intent);
                 break;
         }
     }
 
-    /** dưới 3 func dưới là để xử lý gallery */
+
+
+    /** 3 func dưới là để xử lý gallery */
     private void pickGallery() {
         // intent to pick image from gallery
         Intent intent = new Intent(Intent.ACTION_PICK);
@@ -132,7 +187,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return result;
     }
 
-    /** dưới 3 func dưới là để xử lý camera */
+    /** 3 func dưới là để xử lý camera */
     private boolean checkCameraPermission() {
         boolean resultCamera = ContextCompat.
                 checkSelfPermission(this, Manifest.permission.CAMERA) ==  (PackageManager.PERMISSION_GRANTED);
@@ -191,6 +246,15 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         // got image from camera
         super.onActivityResult(requestCode, resultCode, data);
+        switch (requestCode) {
+            case 200:
+                if (resultCode == RESULT_OK && data != null) {
+                    ArrayList<String> result = data.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+                    edtResult.setText(result.get(0));
+                }
+                break;
+        }// set mic cho vao editext
+// got image from camera
         if (resultCode == RESULT_OK) {
             if (requestCode == IMAGE_PICK_GALLERY_CODE) {
                 // got image from gallery now crop it

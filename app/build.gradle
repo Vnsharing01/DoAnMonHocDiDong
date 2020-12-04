@@ -2,8 +2,12 @@ apply plugin: 'com.android.application'
 
 android {
     compileSdkVersion 30
-    buildToolsVersion "30.0.1"
+    buildToolsVersion "30.0.2"
 
+    packagingOptions {
+        pickFirst '**/*.so'
+    }
+    
     defaultConfig {
         applicationId "vn.detecttext.subtext"
         minSdkVersion 16
