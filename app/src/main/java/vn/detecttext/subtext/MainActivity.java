@@ -28,9 +28,16 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.vision.Frame;
 import com.google.android.gms.vision.text.TextBlock;
 import com.google.android.gms.vision.text.TextRecognizer;
+import com.google.firebase.ml.common.modeldownload.FirebaseModelDownloadConditions;
+import com.google.firebase.ml.naturallanguage.FirebaseNaturalLanguage;
+import com.google.firebase.ml.naturallanguage.languageid.FirebaseLanguageIdentification;
+import com.google.firebase.ml.naturallanguage.translate.FirebaseTranslateLanguage;
+import com.google.firebase.ml.naturallanguage.translate.FirebaseTranslator;
+import com.google.firebase.ml.naturallanguage.translate.FirebaseTranslatorOptions;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
@@ -47,9 +54,12 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     Uri image_uri;
 
     private EditText edtResult;
+    private TextView tvTranslate, tvSourceLang;
     private ImageView imgView;
     private ImageView imgCamera, imgGallery, imgMic, imgSpeaker;
-    private Button tvTranslate;
+    private Button btnTranslate;
+
+    private String sourceText;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,18 +77,20 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void setWidget() {
         edtResult = findViewById(R.id.edt_result);
+        tvTranslate = findViewById(R.id.tv_translateText);
+        tvSourceLang = findViewById(R.id.tv_sourceLang);
         imgView = findViewById(R.id.img_view);
         imgCamera = findViewById(R.id.img_camera);
         imgGallery = findViewById(R.id.img_gallery);
         imgMic = findViewById(R.id.img_mic);
         imgSpeaker = findViewById(R.id.img_speaker);
-        tvTranslate = findViewById(R.id.btn_translateText);
+        btnTranslate = findViewById(R.id.btn_translateText);
 
         imgCamera.setOnClickListener(this);
         imgGallery.setOnClickListener(this);
         imgMic.setOnClickListener(this);
         imgSpeaker.setOnClickListener(this);
-        tvTranslate.setOnClickListener(this);
+        btnTranslate.setOnClickListener(this);
     }
 
     @Override
@@ -109,11 +121,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             case R.id.img_speaker:
                 break;
             case R.id.btn_translateText:
+                Intent intent = new Intent(this, TranslateActivity.class);
+                intent.putExtra("text", edtResult.getText());
+                startActivity(intent);
                 break;
         }
     }
 
-    /** dưới 3 func dưới là để xử lý gallery */
+
+
+    /** 3 func dưới là để xử lý gallery */
     private void pickGallery() {
         // intent to pick image from gallery
         Intent intent = new Intent(Intent.ACTION_PICK);
@@ -132,7 +149,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         return result;
     }
 
-    /** dưới 3 func dưới là để xử lý camera */
+    /** 3 func dưới là để xử lý camera */
     private boolean checkCameraPermission() {
         boolean resultCamera = ContextCompat.
                 checkSelfPermission(this, Manifest.permission.CAMERA) ==  (PackageManager.PERMISSION_GRANTED);
